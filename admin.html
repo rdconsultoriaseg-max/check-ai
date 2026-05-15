@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check AI - Painel do Desenvolvedor</title>
+    <title>Painel de Cadastro - CheckAi</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7fe; margin: 0; padding: 20px; }
-        .header { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #2563eb; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 500px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-logout { background: #64748b; margin-top: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { background: white; width: 100%; max-width: 600px; padding: 20px; border-radius: 10px; border-left: 5px solid #0052cc; margin-bottom: 20px; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2, h3 { margin-top: 0; color: #333; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-blue { background: #2962ff; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-gray { background: #607d8b; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <h1>Painel de Cadastro</h1>
+        <h2>Painel de Cadastro</h2>
         <p>Desenvolvedor: Rodrigo</p>
     </div>
 
@@ -23,38 +25,29 @@
         <h3>Cadastrar Novo Usuário</h3>
         <input type="text" id="nome" placeholder="Nome Completo">
         <input type="text" id="empresa" placeholder="Empresa">
-        <input type="email" id="email" placeholder="E-mail">
+        <input type="email" id="email" placeholder="E-mail / Login">
         <input type="password" id="senha" placeholder="Senha (mínimo 6 dígitos)">
         
-        <label for="tipo">Nível de Acesso:</label>
+        <label>Nível de Acesso:</label>
         <select id="tipo">
             <option value="colaborador">Colaborador</option>
             <option value="gestor">Gestor</option>
-            <option value="admin">Administrador (Você)</option>
+            <option value="admin">Administrador</option>
         </select>
 
-        <button onclick="salvarUsuario()">CADASTRAR USUÁRIO</button>
-        <button class="btn-logout" onclick="window.location.href='index.html'">Voltar ao Login</button>
+        <button class="btn-blue" id="btnCadastrar">CADASTRAR USUÁRIO</button>
+        <button class="btn-gray" onclick="window.location.href='index.html'">Voltar ao Login</button>
     </div>
 
-    <script type="module" src="script.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script>
-        function salvarUsuario() {
-            const nome = document.getElementById('nome').value;
-            const empresa = document.getElementById('empresa').value;
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            const tipo = document.getElementById('tipo').value;
-
-            if(!nome || !email || !senha) {
-                alert("Preencha os campos obrigatórios!");
-                return;
-            }
-
-            // Chama a função que criamos no script.js
-            window.cadastrarUsuario(nome, empresa, email, senha, tipo);
-        }
-    </script>
-</body>
-</html>
+    // Sua configuração do Firebase (mesma do index.html)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkVb8zenJDjsPSFRCiEmcsOHYhKdquT7M",
+        authDomain: "check-ai-9303f.firebaseapp.com",
+        projectId: "check-ai-9303f",
+        storageBucket: "check-ai-9303f.firebasestorage.app",
+        messagingSenderId: "732538707024",
+        appId: "1:732538707024:web:d467b1246c7dcb16030555
