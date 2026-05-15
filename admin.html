@@ -36,46 +36,13 @@
         </select>
 
         <button class="btn-blue" id="btnCadastrar">CADASTRAR USUÁRIO</button>
-        <button class="btn-gray" onclick="window.location.href='index.html'">Sair e Voltar</button>
+        <button class="btn-gray" id="btnVoltar">Sair e Voltar</button>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Adicionando um parâmetro de tempo para evitar cache do navegador
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js?v=" + Date.now();
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js?v=" + Date.now();
 
         const firebaseConfig = {
             apiKey: "AIzaSyBkVb8zenJDjsPSFRCiEmcsOHYhKdquT7M",
-            authDomain: "check-ai-9303f.firebaseapp.com",
-            projectId: "check-ai-9303f",
-            storageBucket: "check-ai-9303f.firebasestorage.app",
-            messagingSenderId: "732538707024",
-            appId: "1:732538707024:web:d467b1246c7dcb16030555"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        document.getElementById('btnCadastrar').addEventListener('click', async () => {
-            const btn = document.getElementById('btnCadastrar');
-            const nome = document.getElementById('nome').value;
-            const login = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            const empresa = document.getElementById('empresa').value;
-            const tipo = document.getElementById('tipo').value;
-
-            if (!nome || !login || !senha) {
-                alert("Campos Nome, E-mail e Senha são obrigatórios!");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "Processando...";
-
-            try {
-                // Tenta gravar no Firebase
-                await addDoc(collection(db, "usuarios"), {
-                    nome, empresa, login, senha, tipo, data: new Date().toISOString()
-                });
-                
-                alert("Sucesso! Usuário cadastrado.");
-                window
