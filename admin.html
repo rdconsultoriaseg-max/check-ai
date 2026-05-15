@@ -5,10 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Cadastro - CheckAi</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .header { background: white; width: 100%; max-width: 600px; padding: 20px; border-radius: 10px; border-left: 5px solid #0052cc; margin-bottom: 20px; }
-        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2, h3 { margin-top: 0; color: #333; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-blue { background: #2962ff; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-gray { background: #607d8b; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .header { background: white; width: 100%; max-width: 500px; padding: 20px; border-radius: 10px; border-left: 5px solid #0052cc; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 450px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        .btn-blue { background: #2962ff; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-blue:hover { background: #1543d4; }
+        .btn-gray { background: #607d8b; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0;">Painel de Cadastro</h2>
+        <p style="margin:5px 0 0; color:#666;">Gerenciamento de Usuários</p>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Novo Usuário</h3>
+        
+        <input type="text" id="nome" placeholder="Nome Completo">
+        <input type="text" id="empresa" placeholder="Empresa">
+        <input type="email" id="email" placeholder="E-mail / Login">
+        <input type="password" id="senha" placeholder="Senha (mín. 6 dígitos)">
+        
+        <label style="font-size: 12px; font-weight: bold; color: #555;">Nível de Acesso:</label>
+        <select id="tipo">
+            <option value="colaborador">Colaborador</option>
+            <option value="gestor">Gestor</option>
+            <option value="admin">Administrador</option>
+        </select>
+
+        <button class="btn-blue" id="btnCadastrar">CADASTRAR USUÁRIO</button>
+        <button class="btn-gray" onclick="window.location.href='index.html'">Sair e Voltar</button>
+    </div>
+
+    <script type="module">
+        // Importação direta e segura
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkVb8zenJDjsPSFRCiEmcsOHYhKdquT7M",
+            authDomain: "check-ai-9303f.firebaseapp.com",
+            projectId: "check-ai-9303f",
+            storageBucket: "check-ai-9303f.firebasestorage.app",
+            messagingSenderId: "732538707024",
+            appId: "1:732538707024:web:d467b1246c7dcb16030555"
+        };
+
+        // Inicialização protegida
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            document.getElementById('btnCadastrar').addEventListener('click', async () => {
+                const btn = document.getElementById('btnCadastrar');
+                const nome = document.getElementById('nome').value;
+                const login = document.getElementById('email').value;
+                const senha = document.getElementById('senha').value;
+
+                if (!nome || !login || !senha) {
+                    alert("Preencha Nome, E-mail e Senha!");
+                    return;
+                }
+
+                if (senha.length < 6) {
+                    alert("A senha precisa ter no mínimo 6 caracteres!");
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerText = "CADASTRANDO...";
+
+                try {
+                    await addDoc(collection(db, "usuarios"), {
+                        nome: nome,
+                        empresa: document.getElementById('empresa').value,
+                        login: login,
+                        senha: senha,
+                        tipo: document.getElementById('tipo').value,
+                        criadoEm: new Date().toISOString()
+                    });
+                    
+                    alert("Usuário " + nome + " cadastrado com sucesso!");
+                    location.reload(); 
+                } catch (e) {
+                    alert("Erro ao salvar
