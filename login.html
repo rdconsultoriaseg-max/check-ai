@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CheckAi</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 350px; text-align: center; }
+        .login-card h2 { color: #3498db; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #2980b9; }
+        .error-msg { color: #e74c3c; font-size: 13px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <img src="https://via.placeholder.com/100x40?text=CheckAi" alt="Logo" style="margin-bottom: 10px;">
+    <p>Acesse sua conta para continuar</p>
+    
+    <input type="email" id="loginEmail" placeholder="Seu e-mail">
+    <input type="password" id="loginSenha" placeholder="Sua senha">
+    <button onclick="realizarLogin()">ENTRAR</button>
+    <div id="mensagemErro" class="error-msg">Usuário ou senha incorretos!</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkVb8zenJDjsPSFRCiEmcsOHYhKdquT7M",
+        authDomain: "check-ai-9303f.firebaseapp.com",
+        projectId: "check-ai-9303f",
+        storageBucket: "check-ai-9303f.firebasestorage.app",
+        messagingSenderId: "732538707024",
+        appId: "1:732538707024:web:d467b1246c7dcb16030555"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    window.realizarLogin = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const senha = document.getElementById('loginSenha').value;
+        const erro = document.getElementById('mensagemErro');
+
+        erro.style.display = 'none';
+
+        try {
+            // Busca no Firebase pelo login e senha digitados
+            const q = query(collection(db, "usuarios"), 
+                        where("login", "==", email), 
+                        where("senha", "==", senha));
+            
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0].data();
+                
+                // Salva os dados na sessão para saber quem logou
+                localStorage.setItem('usuarioLogado', userDoc.nome);
+                localStorage.setItem('perfilUsuario', userDoc.perfil);
+
+                // Redireciona conforme o perfil
+                alert(`Bem-vindo, ${userDoc.nome}!`);
+                window.location.href = "dashboard.html";
+            } else {
+                erro.style.display = 'block';
+            }
+        } catch (e) {
+            console.error("Erro ao logar: ", e);
+            alert("Erro de conexão com o banco de dados.");
+        }
+    };
+</script>
+
+</body>
+</html>

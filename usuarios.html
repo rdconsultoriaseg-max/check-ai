@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - CheckAi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #334155; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+        .btn-voltar { text-decoration: none; color: #3498db; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        
+        /* Formulário de Cadastro */
+        .form-cadastro { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid #e2e8f0; }
+        .field-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: white; width: 100%; box-sizing: border-box; }
+        
+        .btn-cadastrar { grid-column: span 2; padding: 15px; background: #3498db; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .btn-cadastrar:hover { background: #2980b9; }
+
+        /* Lista de Usuários na Parte Inferior */
+        .section-titulo { margin: 40px 0 15px; font-size: 18px; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #f1f5f9; }
+        th { background: #f1f5f9; text-align: left; color: #475569; font-size: 12px; padding: 15px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        
+        .actions { display: flex; gap: 10px; }
+        .btn-action { border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
+        .btn-reset { background: #f1c40f; } /* Amarelo */
+        .btn-delete { background: #e74c3c; } /* Vermelho */
+        .btn-action:hover { opacity: 0.8; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="dashboard.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+        <h2 style="margin:0"><i class="fas fa-users-cog"></i> Gerenciar Usuários</h2>
+    </div>
+
+    <div class="form-cadastro">
+        <div class="field-group">
+            <label>Nome Completo</label>
+            <input type="text" id="nome" placeholder="Nome do colaborador">
+        </div>
+
+        <div class="field-group">
+            <label>E-mail (Login)</label>
+            <input type="email" id="email" placeholder="usuario@superglobo.com.br">
+        </div>
+
+        <div class="field-group">
+            <label>Senha</label>
+            <input type="password" id="senha" placeholder="Senha de acesso">
+        </div>
+
+        <div class="field-group">
+            <label>Tipo de Acesso</label>
+            <select id="perfil">
+                <option value="Colaborador">Colaborador</option>
+                <option value="Gestor">Gestor</option>
+                <option value="Admin">Administrador</option>
+            </select>
+        </div>
+
+        <button class="btn-cadastrar" onclick="cadastrarUsuario()">
+            <i class="fas fa-user-plus"></i> CADASTRAR USUÁRIO
+        </button>
+    </div>
+
+    <div class="section-titulo">
+        <i class="fas fa-users"></i> Usuários Cadastrados
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>E-mail (Login)</th>
+                <th>Acesso</th>
+                <th style="width: 100px;">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaUsuarios">
+            </tbody>
+    </table>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkVb8zenJDjsPSFRCiEmcsOHYhKdquT7M",
+        authDomain: "check-ai-9303f.firebaseapp.com",
+        projectId: "check-ai-9303f",
+        storageBucket: "check-ai-9303f.firebasestorage.app",
+        messagingSenderId: "732538707024",
+        appId: "1:732538707024:web:d467b1246c7dcb16030555"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    // LISTAR USUÁRIOS NA TABELA
+    async function carregarUsuarios() {
+        const tbody = document.getElementById('tabelaUsuarios');
+        tbody.innerHTML = "<tr><td colspan='4'>Carregando lista...</td></tr>";
+        
+        try {
+            const q = query(collection(db, "usuarios"), orderBy("nome"));
+            const snap = await getDocs(q);
+            tbody.innerHTML = "";
+
+            snap.forEach((documento) => {
+                const u = documento.data();
+                const id = documento.id;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${u.nome}</b></td>
+                        <td>${u.login}</td>
+                        <td>${u.perfil}</td>
+                        <td class="actions">
+                            <button class="btn-action btn-reset" onclick="resetarSenha('${id}')" title="Resetar Senha para 123456">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="excluirUsuario('${id}', '${u.nome}')" title="Excluir Definitivamente">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) { tbody.innerHTML = "Erro ao carregar dados do Firebase."; }
+    }
+
+    // SALVAR NOVO USUÁRIO
+    window.cadastrarUsuario = async () => {
+        const nome = document.getElementById('nome').value;
+        const login = document.getElementById('email').value;
+        const senha = document.getElementById('senha').value;
+        const perfil = document.getElementById('perfil').value;
+
+        if(!nome || !login || !senha) {
+            return alert("Atenção: Nome, E-mail e Senha são campos obrigatórios!");
+        }
+
+        try {
+            await addDoc(collection(db, "usuarios"), { nome, login, senha, perfil });
+            alert("Usuário cadastrado com sucesso!");
+            location.reload();
+        } catch (e) { alert("Erro ao salvar. Verifique sua conexão."); }
+    };
+
+    // RESET DE SENHA
+    window.resetarSenha = async (id) => {
+        if(confirm("Deseja resetar a senha deste usuário para '123456'?")) {
+            await updateDoc(doc(db, "usuarios", id), { senha: "123456" });
+            alert("Senha alterada com sucesso!");
+        }
+    };
+
+    // EXCLUSÃO DEFINITIVA
+    window.excluirUsuario = async (id, nome) => {
+        if(confirm(`Você tem certeza que deseja excluir permanentemente o usuário ${nome}?`)) {
+            await deleteDoc(doc(db, "usuarios", id));
+            location.reload();
+        }
+    };
+
+    carregarUsuarios();
+</script>
+
+</body>
+</html>
